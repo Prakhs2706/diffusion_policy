@@ -1,0 +1,41 @@
+name: block_stacking_image
+
+image_shape: #todo
+dataset_path: #todo
+
+shape_meta: &shape_meta
+  # acceptable types: rgb, low_dim
+  obs:
+    image:
+      shape: *image_shape
+      type: rgb
+    goal_image:
+      shape: *image_shape
+      type: rgb
+    agent_pos:
+      shape: [8]
+      type: low_dim
+    goal_agent_pos:
+      shape: [8]
+      type: low_dim
+  action:
+    shape: [8]
+
+env_runner:
+  _target_: diffusion_policy.env_runner.real_pusht_image_runner.BlockStackingImageRunner
+
+dataset:
+  _target_: diffusion_policy.dataset.real_pusht_image_dataset.BlockStackingImageDataset
+  shape_meta: *shape_meta
+  dataset_path: ${task.dataset_path}
+  horizon: ${horizon}
+  pad_before: ${eval:'${n_obs_steps}-1+${n_latency_steps}'}
+  pad_after: ${eval:'${n_action_steps}-1'}
+  n_obs_steps: ${dataset_obs_steps}
+  n_latency_steps: ${n_latency_steps}
+  use_cache: True
+  seed: 42
+  val_ratio: 0.00
+  max_train_episodes: null
+  delta_action: False
+
