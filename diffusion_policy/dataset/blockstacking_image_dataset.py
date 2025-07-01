@@ -61,7 +61,7 @@ class BlockStackingImageDataset(BaseImageDataset):
     def get_normalizer(self, mode='limits', **kwargs):
         data = {
             'action': np.concatenate([self.replay_buffer['action_0_tcp_xyz_wxyz'], self.replay_buffer['action_0_gripper_width']], axis=-1),
-            'agent_pos': np.concatenate([self.replay_buffer['robot_0_tcp_xyz_wxyz'], self.replay_buffer['robot_0_tcp_xyz_wxyz']], axis=-1)
+            'agent_pos': np.concatenate([self.replay_buffer['robot_0_tcp_xyz_wxyz'], self.replay_buffer['robot_0_gripper_width']], axis=-1)
         }
         normalizer = LinearNormalizer()
         normalizer.fit(data=data, last_n_dims=1, mode=mode, **kwargs)
@@ -87,9 +87,9 @@ class BlockStackingImageDataset(BaseImageDataset):
 
         data = {
             'obs': {
-                'image': image, # T, 3, 224, 224
+                'image': image, # T, 3, 128, 128
                 'agent_pos': agent_pos, # T, 8 (x,y,z,qx,qy,qz,qw,gripper_width)
-                'goal_image': goal_image, # T, 3, 224, 224
+                'goal_image': goal_image, # T, 3, 128, 128
                 'goal_agent_pos': goal_pos, # T, 8 (x,y,z,qx,qy,qz,qw,gripper_width)
             },
             'action': agent_action # T, 8 (x,y,z,qx,qy,qz,qw,gripper_width)
@@ -105,7 +105,7 @@ class BlockStackingImageDataset(BaseImageDataset):
 
 def test():
     import os
-    zarr_path = os.path.expanduser('/home/yihuai/robotics/repositories/mujoco/mujoco-env/data/collect_heuristic_data/2024-12-24_11-36-15_100episodes/merged_data.zarr')
+    zarr_path = os.path.expanduser('') #todo
     dataset = BlockStackingImageDataset(zarr_path, horizon=16)
     print(dataset[0])
     # from matplotlib import pyplot as plt

@@ -1,6 +1,6 @@
 name: block_stacking_image
 
-image_shape: #todo
+image_shape: [3,128,128]
 dataset_path: #todo
 
 shape_meta: &shape_meta
@@ -22,10 +22,10 @@ shape_meta: &shape_meta
     shape: [8]
 
 env_runner:
-  _target_: diffusion_policy.env_runner.real_pusht_image_runner.BlockStackingImageRunner
+  _target_: diffusion_policy.env_runner.blockstacking_image_runner.BlockStackingImageRunner
 
 dataset:
-  _target_: diffusion_policy.dataset.real_pusht_image_dataset.BlockStackingImageDataset
+  _target_: diffusion_policy.dataset.blockstacking_image_dataset.BlockStackingImageDataset
   shape_meta: *shape_meta
   dataset_path: ${task.dataset_path}
   horizon: ${horizon}
