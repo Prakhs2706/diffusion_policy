@@ -24,7 +24,7 @@ env_runner:
 dataset:
   _target_: diffusion_policy.dataset.blockstacking_image_dataset.BlockStackingImageDataset
   shape_meta: *shape_meta
-  dataset_path: /home/ksaha/Downloads/block_stacking_dataset.zarr
+  dataset_path: /home/ksaha/Downloads/block_stacking.zarr
   horizon: ${horizon}
   pad_before: ${eval:'${n_obs_steps}-1+${n_latency_steps}'}
   pad_after: ${eval:'${n_action_steps}-1'}
