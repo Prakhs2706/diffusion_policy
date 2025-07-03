@@ -1,8 +1,6 @@
-name: block_stacking_image
+name: blockstacking_image
 
-image_shape: [3,128,128]
-dataset_path: 
-
+image_shape: &image_shape [3, 128, 128]
 shape_meta: &shape_meta
   # acceptable types: rgb, low_dim
   obs:
@@ -13,26 +11,33 @@ shape_meta: &shape_meta
       shape: *image_shape
       type: rgb
     agent_pos:
-      shape: [7]
+      shape: [8]
       type: low_dim
   action:
-    shape: [7]
+    shape: [8]
 
 env_runner:
-  _target_: diffusion_policy.env_runner.blockstacking_image_runner.BlockStackingImageRunner
+  _target_: diffusion_policy.env_runner.pusht_image_runner.BlockStackingImageRunner
+  n_train: 6
+  n_train_vis: 2
+  train_start_seed: 0
+  n_test: 50
+  n_test_vis: 4
+  legacy_test: True
+  test_start_seed: 100000
+  max_steps: 300
+  n_obs_steps: ${n_obs_steps}
+  n_action_steps: ${n_action_steps}
+  fps: 10
+  past_action: ${past_action_visible}
+  n_envs: null
 
 dataset:
-  _target_: diffusion_policy.dataset.blockstacking_image_dataset.BlockStackingImageDataset
-  shape_meta: *shape_meta
-  dataset_path: /home/ksaha/Downloads/block_stacking.zarr
+  _target_: diffusion_policy.dataset.pusht_image_dataset.BlockStackingImageDataset
+  zarr_path: /home/ksaha/Downloads/block_stacking.zarr
   horizon: ${horizon}
-  pad_before: ${eval:'${n_obs_steps}-1+${n_latency_steps}'}
+  pad_before: ${eval:'${n_obs_steps}-1'}
   pad_after: ${eval:'${n_action_steps}-1'}
-  n_obs_steps: ${dataset_obs_steps}
-  n_latency_steps: ${n_latency_steps}
-  use_cache: True
   seed: 42
-  val_ratio: 0.00
-  max_train_episodes: null
-  delta_action: False
-
+  val_ratio: 0.02
+  max_train_episodes: 90
