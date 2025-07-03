@@ -23,8 +23,7 @@ class BlockStackingImageDataset(BaseImageDataset):
         
         super().__init__()
         self.replay_buffer = ReplayBuffer.copy_from_path(
-            # zarr_path, keys=['img', 'state', 'action'])
-            zarr_path, keys=['robot_0_camera_images', 'robot_0_tcp_xyz_wxyz', 'robot_0_gripper_width', 'action_0_tcp_xyz_wxyz', 'action_0_gripper_width'])
+            zarr_path, keys=['img', 'state', 'action'])
         val_mask = get_val_mask(
             n_episodes=self.replay_buffer.n_episodes, 
             val_ratio=val_ratio,
@@ -60,39 +59,32 @@ class BlockStackingImageDataset(BaseImageDataset):
 
     def get_normalizer(self, mode='limits', **kwargs):
         data = {
-            'action': np.concatenate([self.replay_buffer['action_0_tcp_xyz_wxyz'], self.replay_buffer['action_0_gripper_width']], axis=-1),
-            'agent_pos': np.concatenate([self.replay_buffer['robot_0_tcp_xyz_wxyz'], self.replay_buffer['robot_0_gripper_width']], axis=-1)
+            'action': self.replay_buffer['action'],
+            'agent_pos': self.replay_buffer['state']  # x, y, z, theta_x, theta_y, theta_z, gripper_width
         }
         normalizer = LinearNormalizer()
         normalizer.fit(data=data, last_n_dims=1, mode=mode, **kwargs)
         normalizer['image'] = get_image_range_normalizer()
-        normalizer['goal_image']= get_image_range_normalizer()
+        normalizer['goal_image'] = get_image_range_normalizer()
         return normalizer
 
     def __len__(self) -> int:
         return len(self.sampler)
 
     def _sample_to_data(self, sample):
-        # agent_pos = sample['state'][:,:2].astype(np.float32) # (agent_posx2, block_posex3)
-        agent_pos = np.concatenate([sample['robot_0_tcp_xyz_wxyz'], sample['robot_0_gripper_width']], axis=-1).astype(np.float32)
-        agent_action = np.concatenate([sample['action_0_tcp_xyz_wxyz'], sample['action_0_gripper_width']], axis=-1).astype(np.float32)
-        # image = np.moveaxis(sample['img'],-1,1)/255
-        image = np.moveaxis(sample['robot_0_camera_images'].astype(np.float32).squeeze(1),-1,1)/255
-        
-        # Goal-conditioning
-        goal_image = image[-1:]     # (1, 3, H, W)
-        goal_pos = agent_pos[-1:]   # (1, 8)
+        agent_pos = sample['state'].astype(np.float32) 
+        image = np.moveaxis(sample['img'],-1,1)/255
+
+        goal_image = image[-1:]     
         goal_image = np.repeat(goal_image, repeats=image.shape[0], axis=0)
-        goal_pos = np.repeat(goal_pos, repeats=agent_pos.shape[0], axis=0)
 
         data = {
             'obs': {
                 'image': image, # T, 3, 128, 128
-                'agent_pos': agent_pos, # T, 8 (x,y,z,qx,qy,qz,qw,gripper_width)
-                'goal_image': goal_image, # T, 3, 128, 128
-                'goal_agent_pos': goal_pos, # T, 8 (x,y,z,qx,qy,qz,qw,gripper_width)
+                'agent_pos': agent_pos, # T,7   x,y,z,theta_x,theta_y,theta_z,gripper_width (0,1)
+                'goal_image':goal_image, # T, 3, 128, 128
             },
-            'action': agent_action # T, 8 (x,y,z,qx,qy,qz,qw,gripper_width)
+            'action': sample['action'].astype(np.float32) # T, 7   delta(x,y,z,theta_x,theta_y,theta_z,gripper_width)
         }
         return data
     
@@ -105,14 +97,11 @@ class BlockStackingImageDataset(BaseImageDataset):
 
 def test():
     import os
-    zarr_path = os.path.expanduser('') #todo
+    zarr_path = os.path.expanduser('/home/ksaha/Downloads/block_stacking.zarr')
     dataset = BlockStackingImageDataset(zarr_path, horizon=16)
-    print(dataset[0])
+
     # from matplotlib import pyplot as plt
     # normalizer = dataset.get_normalizer()
     # nactions = normalizer['action'].normalize(dataset.replay_buffer['action'])
     # diff = np.diff(nactions, axis=0)
     # dists = np.linalg.norm(np.diff(nactions, axis=0), axis=-1)
-
-if __name__ == '__main__':
-    test()
