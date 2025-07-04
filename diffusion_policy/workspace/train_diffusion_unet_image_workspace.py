@@ -146,7 +146,7 @@ class TrainDiffusionUnetImageWorkspace(BaseWorkspace):
             cfg.training.max_val_steps = 3
             cfg.training.rollout_every = 1
             cfg.training.checkpoint_every = 1
-            cfg.training.val_every = 1
+            cfg.training.val_every = 50
             cfg.training.sample_every = 1
 
         # training loop
@@ -267,19 +267,19 @@ class TrainDiffusionUnetImageWorkspace(BaseWorkspace):
                     if cfg.checkpoint.save_last_snapshot:
                         self.save_snapshot()
 
-                    # sanitize metric names
-                    metric_dict = dict()
-                    for key, value in step_log.items():
-                        new_key = key.replace('/', '_')
-                        metric_dict[new_key] = value
+                    # # sanitize metric names
+                    # metric_dict = dict()
+                    # for key, value in step_log.items():
+                    #     new_key = key.replace('/', '_')
+                    #     metric_dict[new_key] = value
                     
-                    # We can't copy the last checkpoint here
-                    # since save_checkpoint uses threads.
-                    # therefore at this point the file might have been empty!
-                    topk_ckpt_path = topk_manager.get_ckpt_path(metric_dict)
+                    # # We can't copy the last checkpoint here
+                    # # since save_checkpoint uses threads.
+                    # # therefore at this point the file might have been empty!
+                    # topk_ckpt_path = topk_manager.get_ckpt_path(metric_dict)
 
-                    if topk_ckpt_path is not None:
-                        self.save_checkpoint(path=topk_ckpt_path)
+                    # if topk_ckpt_path is not None:
+                    #     self.save_checkpoint(path=topk_ckpt_path)
                 # ========= eval end for this epoch ==========
                 policy.train()
 
@@ -295,6 +295,7 @@ class TrainDiffusionUnetImageWorkspace(BaseWorkspace):
     config_path=str(pathlib.Path(__file__).parent.parent.joinpath("config")), 
     config_name=pathlib.Path(__file__).stem)
 def main(cfg):
+    cfg.training.debug = False
     workspace = TrainDiffusionUnetImageWorkspace(cfg)
     workspace.run()
 

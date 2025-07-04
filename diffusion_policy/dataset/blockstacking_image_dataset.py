@@ -108,7 +108,7 @@ class BlockStackingImageDataset(BaseImageDataset):
 
 def test():
     import os
-    zarr_path = os.path.expanduser('/home/ksaha/Downloads/block_stacking_replay.zarr')
+    zarr_path = os.path.expanduser('/home/prakhar/Documents/GitHub/diffusion_policy/block_stacking_replay.zarr')
     dataset = BlockStackingImageDataset(zarr_path, horizon=16)
 
     # from matplotlib import pyplot as plt
