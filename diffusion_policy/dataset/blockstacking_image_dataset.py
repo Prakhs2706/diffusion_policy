@@ -71,33 +71,44 @@ class BlockStackingImageDataset(BaseImageDataset):
     def __len__(self) -> int:
         return len(self.sampler)
 
-    def _sample_to_data(self, sample):
+    def _sample_to_data(self, sample, idx):
         agent_pos = sample['state'].astype(np.float32) 
-        image = np.moveaxis(sample['img'],-1,1)/255
+        image = np.moveaxis(sample['img'], -1, 1) / 255.0  # (T, 3, H, W)
 
-        goal_image = image[-1:]     
-        goal_image = np.repeat(goal_image, repeats=image.shape[0], axis=0)
+        # Use episode index of the first timestep in the sample
+        sample_start_idx = self.sampler.indices[idx][0]
+        episode_idxs = self.replay_buffer.get_episode_idxs()
+        episode_id = episode_idxs[sample_start_idx]
+
+        # Get last frame index for that episode
+        goal_idx = self.replay_buffer.episode_ends[episode_id] - 1
+        goal_img = self.replay_buffer['img'][goal_idx]           # (H, W, 3)
+        goal_img = np.moveaxis(goal_img, -1, 0) / 255.0           # (3, H, W)
+
+        # Repeat goal image along time axis
+        goal_image = np.repeat(goal_img[None], repeats=image.shape[0], axis=0)  # (T, 3, H, W)
 
         data = {
             'obs': {
-                'image': image, # T, 3, 128, 128
-                'agent_pos': agent_pos, # T,7   x,y,z,theta_x,theta_y,theta_z,gripper_width (0,1)
-                'goal_image':goal_image, # T, 3, 128, 128
+                'image': image.astype(np.float32),
+                'agent_pos': agent_pos,
+                'goal_image': goal_image.astype(np.float32),
             },
-            'action': sample['action'].astype(np.float32) # T, 7   delta(x,y,z,theta_x,theta_y,theta_z,gripper_width)
+            'action': sample['action'].astype(np.float32)
         }
         return data
+
     
     def __getitem__(self, idx: int) -> Dict[str, torch.Tensor]:
         sample = self.sampler.sample_sequence(idx)
-        data = self._sample_to_data(sample)
+        data = self._sample_to_data(sample, idx)
         torch_data = dict_apply(data, torch.from_numpy)
         return torch_data
 
 
 def test():
     import os
-    zarr_path = os.path.expanduser('/home/ksaha/Downloads/block_stacking.zarr')
+    zarr_path = os.path.expanduser('/home/ksaha/Downloads/block_stacking_replay.zarr')
     dataset = BlockStackingImageDataset(zarr_path, horizon=16)
 
     # from matplotlib import pyplot as plt
