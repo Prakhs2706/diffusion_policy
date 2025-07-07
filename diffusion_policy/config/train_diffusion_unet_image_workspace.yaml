@@ -100,7 +100,7 @@ training:
   # optimization
   lr_scheduler: cosine
   lr_warmup_steps: 500
-  num_epochs: 200
+  num_epochs: 501
   gradient_accumulate_every: 1
   # EMA destroys performance when used with BatchNorm
   # replace BatchNorm with GroupNorm.
@@ -109,8 +109,8 @@ training:
   # training loop control
   # in epochs
   rollout_every: 50
-  checkpoint_every: 50
-  val_every: 100
+  checkpoint_every: 25
+  val_every: 50
   sample_every: 5
   # steps per epoch
   max_train_steps: null

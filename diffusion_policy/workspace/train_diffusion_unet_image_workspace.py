@@ -140,14 +140,15 @@ class TrainDiffusionUnetImageWorkspace(BaseWorkspace):
         # save batch for sampling
         train_sampling_batch = None
 
-        if cfg.training.debug:
-            cfg.training.num_epochs = 2
-            cfg.training.max_train_steps = 3
-            cfg.training.max_val_steps = 3
-            cfg.training.rollout_every = 1
-            cfg.training.checkpoint_every = 1
-            cfg.training.val_every = 50
-            cfg.training.sample_every = 1
+        # if cfg.training.debug:
+        #     cfg.training.num_epochs = 2
+        #     cfg.training.max_train_steps = 3
+        #     cfg.training.max_val_steps = 3
+        #     cfg.training.rollout_every = 1
+        #     cfg.training.checkpoint_every = 1
+        #     cfg.training.val_every = 50
+        #     cfg.training.sample_every = 1
+        cfg.training.debug = False
 
         # training loop
         log_path = os.path.join(self.output_dir, 'logs.json.txt')
@@ -223,6 +224,7 @@ class TrainDiffusionUnetImageWorkspace(BaseWorkspace):
                     step_log.update(runner_log)
 
                 # run validation
+                print("validation every", cfg.training.val_every)
                 if (self.epoch % cfg.training.val_every) == 0:
                     with torch.no_grad():
                         val_losses = list()
@@ -295,7 +297,8 @@ class TrainDiffusionUnetImageWorkspace(BaseWorkspace):
     config_path=str(pathlib.Path(__file__).parent.parent.joinpath("config")), 
     config_name=pathlib.Path(__file__).stem)
 def main(cfg):
-    cfg.training.debug = False
+    
+   
     workspace = TrainDiffusionUnetImageWorkspace(cfg)
     workspace.run()
 
