@@ -268,6 +268,10 @@ class TrainDiffusionUnetImageWorkspace(BaseWorkspace):
                         self.save_checkpoint()
                     if cfg.checkpoint.save_last_snapshot:
                         self.save_snapshot()
+                    # Save every 50 epochs
+                    if (self.epoch % 25 == 0):
+                        self.save_checkpoint(tag=f'epoch_{self.epoch:04d}')
+
 
                     # # sanitize metric names
                     # metric_dict = dict()

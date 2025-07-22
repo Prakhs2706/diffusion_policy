@@ -34,10 +34,10 @@ env_runner:
 
 dataset:
   _target_: diffusion_policy.dataset.blockstacking_image_dataset.BlockStackingImageDataset
-  zarr_path: /home/prakhar/Documents/GitHub/diffusion_policy/block_stacking_replay.zarr
+  zarr_path: /home/prakhar/Downloads/20250721_161332_with_ee_augmented_sh.zarr
   horizon: ${horizon}
   pad_before: ${eval:'${n_obs_steps}-1'}
   pad_after: ${eval:'${n_action_steps}-1'}
   seed: 42
   val_ratio: 0.02
-  max_train_episodes: 90
+  max_train_episodes: 1800

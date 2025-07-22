@@ -59,7 +59,7 @@ class BlockStackingImageDataset(BaseImageDataset):
 
     def get_normalizer(self, mode='limits', **kwargs):
         data = {
-            'action': self.replay_buffer['action'],
+            'action': self.replay_buffer['action'], #del x, dely, delz, deltheta_x, deltheta_y, deltheta_z, gripper_width
             'agent_pos': self.replay_buffer['state']  # x, y, z, theta_x, theta_y, theta_z, gripper_width
         }
         normalizer = LinearNormalizer()
@@ -108,11 +108,6 @@ class BlockStackingImageDataset(BaseImageDataset):
 
 def test():
     import os
-    zarr_path = os.path.expanduser('/home/prakhar/Documents/GitHub/diffusion_policy/block_stacking_replay.zarr')
+    zarr_path = os.path.expanduser('/home/prakhar/Downloads/20250721_161332_with_ee_augmented_sh.zarr')
     dataset = BlockStackingImageDataset(zarr_path, horizon=16)
 
-    # from matplotlib import pyplot as plt
-    # normalizer = dataset.get_normalizer()
-    # nactions = normalizer['action'].normalize(dataset.replay_buffer['action'])
-    # diff = np.diff(nactions, axis=0)
-    # dists = np.linalg.norm(np.diff(nactions, axis=0), axis=-1)
